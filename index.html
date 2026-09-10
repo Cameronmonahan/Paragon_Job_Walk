@@ -75,6 +75,9 @@ input,textarea,select{font-family:inherit;font-size:17px;color:inherit}
 }
 .job[data-health="flag"]{border-left-color:var(--buff)}
 .job[data-health="due"]{border-left-color:var(--ink-faint)}
+.person{display:block;width:100%;text-align:left;background:var(--paper-raised);
+  border:1px solid var(--rule);border-left:5px solid var(--gold);
+  border-radius:var(--radius);padding:18px}
 .job-name{font-size:19px;font-weight:600;letter-spacing:-.01em;line-height:1.25}
 .job-pm{font-size:14px;color:var(--ink-faint);margin-top:3px}
 .job-stats{display:flex;gap:22px;margin-top:14px;padding-top:13px;border-top:1px solid var(--rule)}
@@ -502,12 +505,12 @@ function renderPeople(){
   const people = names.length ? names : ["Seth","Carlos","Brandon"];
   $("pmlist").innerHTML = people.map(n => {
     const count = jobs.filter(j => j.pm === n).length;
-    return `<button class="job" data-pm="${esc(n)}" style="border-left-color:var(--gold)">
+    return `<button class="person" data-pm="${esc(n)}">
       <div class="job-name">${esc(n)}</div>
       <div class="job-pm">${count} active ${count === 1 ? "job" : "jobs"}</div>
     </button>`;
   }).join("");
-  document.querySelectorAll("#pmlist .job").forEach(el => el.onclick = () => {
+  document.querySelectorAll("#pmlist .person").forEach(el => el.onclick = () => {
     currentPM = el.dataset.pm; show("s-jobs"); renderJobs();
   });
 }
@@ -535,12 +538,13 @@ function renderJobs(){
         </div>
       </div>
     </button>`).join("");
-  document.querySelectorAll(".job").forEach(el =>
+  document.querySelectorAll("#joblist .job").forEach(el =>
     el.onclick = () => startWalk(jobs.find(j => j.id === el.dataset.id)));
 }
 
 /* ── walk ──────────────────────────────────────────────────── */
 function startWalk(j){
+  if(!j) return;
   job = j; step = 0; answers = {}; issues = []; photos = [];
   show("s-walk"); renderStep();
 }
@@ -627,7 +631,11 @@ $("next-btn").onclick = () => {
   step++; renderStep();
 };
 $("prev-btn").onclick = () => { if(step > 0){ step--; renderStep(); } };
-$("walk-back").onclick = () => { if(confirm("Leave this walk? Nothing is saved yet.")) show("s-jobs"); };
+$("walk-back").onclick = () => {
+  if(!confirm("Leave this walk? Nothing is saved yet.")) return;
+  job = null; step = 0; answers = {}; issues = []; photos = [];
+  show("s-jobs"); renderJobs();
+};
 
 /* ── issue sheet ───────────────────────────────────────────── */
 function openSheet(field){
@@ -717,7 +725,7 @@ async function finish(){
 }
 
 $("done-btn").onclick = () => { show("s-jobs"); loadJobs(); };
-$("switch-pm").onclick = () => { currentPM = null; show("s-who"); };
+$("switch-pm").onclick = () => { currentPM = null; show("s-who"); renderPeople(); };
 
 /* ── util ──────────────────────────────────────────────────── */
 function show(id){
