@@ -471,7 +471,11 @@ async function api(path, opts){
 }
 
 async function loadJobs(){
-  if(!live()){ $("demo-banner").hidden = false; jobs = DEMO_JOBS; return renderJobs(); }
+  if(!live()){
+    $("demo-banner").hidden = false;
+    jobs = DEMO_JOBS;
+    return currentPM ? renderJobs() : renderPeople();
+  }
   try{
     const data = await api("/jobs");
     jobs = data.records.map(r => ({
